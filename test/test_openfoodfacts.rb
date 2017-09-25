@@ -294,8 +294,31 @@ class TestOpenfoodfacts < Minitest::Test
     end
   end
 
-  # FAQ
+  # Period After Opening
 
+  def test_it_fetches_periods_after_opening
+    VCR.use_cassette("periods_after_opening") do
+      periods_after_opening = ::Openfoodfacts::PeriodAfterOpening.all
+      assert_includes periods_after_opening.map { |period_after_opening| period_after_opening['name'] }, "3 months"
+    end
+  end
+
+  def test_it_fetches_periods_after_opening_for_locale
+    VCR.use_cassette("periods_after_opening_locale") do
+      periods_after_opening = ::Openfoodfacts::PeriodAfterOpening.all(locale: 'fr')
+      assert_includes periods_after_opening.map { |period_after_opening| period_after_opening['name'] }, "3 mois"
+    end
+  end
+
+  def test_it_fetches_products_for_period_after_opening
+    period_after_opening = ::Openfoodfacts::PeriodAfterOpening.new("url" => "https://world.openfoodfacts.org/period-after-opening/30-months")
+    VCR.use_cassette("products_for_period_after_opening") do
+      products_for_period_after_opening = period_after_opening.products(page: -1)
+      refute_empty products_for_period_after_opening
+    end
+  end
+
+  # FAQ
   def test_it_fetches_faq
     VCR.use_cassette("faq") do
       refute_empty ::Openfoodfacts::Faq.items(locale: 'fr')
